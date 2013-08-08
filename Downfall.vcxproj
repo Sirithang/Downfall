@@ -56,7 +56,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./ext/SDL/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./ext/SDL/include;./ext/foundation/include;./include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -86,7 +86,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ext\foundation\src\memory.cpp" />
+    <ClCompile Include="ext\foundation\src\murmur_hash.cpp" />
+    <ClCompile Include="ext\foundation\src\string_stream.cpp" />
+    <ClCompile Include="src\core\mapinfo.cpp" />
+    <ClCompile Include="src\core\renderer.cpp" />
     <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\core\material.h" />
+    <ClInclude Include="include\core\renderer.h" />
+    <ClInclude Include="include\mapinfo.h" />
+    <ClInclude Include="include\map_types.h" />
+    <ClInclude Include="include\math\mat4x4.h" />
+    <ClInclude Include="include\math\math_types.h" />
+    <ClInclude Include="include\math\quaternion.h" />
+    <ClInclude Include="include\math\ray.h" />
+    <ClInclude Include="include\math\vector2.h" />
+    <ClInclude Include="include\math\vector3.h" />
+    <ClInclude Include="include\math\vector4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
