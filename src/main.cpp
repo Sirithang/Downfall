@@ -2,16 +2,21 @@
 
 #include "core/renderer.h"
 #include "mapinfo.h"
+#include "core/material.h"
+
+#include "helper/lodepng.h"
 
 int main(int argc, char* argv[])
 {
 	foundation::memory_globals::init();
 
+	MaterialManager::init();
+
 	SDL_Window *win = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *writableTex = NULL;
 
-    int posX = 100, posY = 100, width = 320, height = 240;
+    int posX = 100, posY = 100, width = 800, height = 600;
 
     win = SDL_CreateWindow("Hello World", posX, posY, width, height, 0);
 
@@ -20,12 +25,29 @@ int main(int argc, char* argv[])
 	writableTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
 
 	Renderer rend;
-	rend.w = 320;
-	rend.h = 240;
+	rend.w = width;
+	rend.h = height;
 	rend.buffer = new int[rend.h * rend.w];
 
+	int matID = MaterialManager::createObject();
+
+	Material& mat = MaterialManager::getObject(matID);
+	material::init(mat);
+
+	unsigned error;
+	int* image;
+	unsigned int w, h;
+
+	error = lodepng_decode32_file((unsigned char**)&image, &w, &h, "data/pattern.png");
+	if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
+
+	material::loadImg(mat, image, w, h);
+	free(image);
+
+	mat.color = 0xFF000000;
+
 	MapInfo map;
-	const LineInfo lI = {{-2,2}, {2,2}, 1};
+	const LineInfo lI = {{-2,2}, {2,2}, 1, matID};
 	mapinfo::addLine(map, lI);
 
     while (1) {

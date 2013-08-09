@@ -32,6 +32,7 @@ RayIntersect lineinfo::rayCheck(const alfar::Ray2D inRay, const LineInfo* inLine
 		if(d < ret.distance)
 		{
 			ret.lineID = i;
+			ret.purcentage = s;
 			ret.distance = d;
 			ret.point = pts;
 		}

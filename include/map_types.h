@@ -9,7 +9,8 @@ struct LineInfo
 	alfar::Vector2 start;
 	alfar::Vector2 end;
 	//0 right (start to end), 1 left (end to start), 2 doublesided.
-	char side;	
+	char side;
+	int material;
 };
 
 struct MapInfo
@@ -23,5 +24,7 @@ struct RayIntersect
 {
 	int lineID;
 	float distance;
+	///this contain the purcentage of the hitten wall (0 for start, 1 for end)
+	float purcentage;
 	alfar::Vector2 point;
 };
