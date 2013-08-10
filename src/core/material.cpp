@@ -1,4 +1,5 @@
 #include "core/material.h"
+#include "helper/helpers.h"
 #include <memory>
 
 void material::init(Material& mat, int* texData, int w, int h, int color)
@@ -9,8 +10,8 @@ void material::init(Material& mat, int* texData, int w, int h, int color)
 
 	if(texData != 0)
 	{
-		mat._texData = new int[w * h];
-		memcpy(mat._texData, texData, w * h * sizeof(int));
+		mat._texData = new unsigned int[w * h];
+		memcpy(mat._texData, texData, w * h * sizeof(unsigned int));
 	}
 	else
 	{
@@ -41,10 +42,10 @@ void material::drawTo(Material& mat, Renderer& buffer, const alfar::Rect& srcRec
 	//clamped to buffer dim to avoid out of buffer writing
 	alfar::Rect trueDest;
 
-	trueDest.min.x = std::max(destRect.min.x, 0.0f);
-	trueDest.min.y = std::max(destRect.min.y, 0.0f);
-	trueDest.max.x = std::min(destRect.max.x, (float)buffer.w);
-	trueDest.max.y = std::min(destRect.max.y, (float)buffer.h);
+	trueDest.min.x = destRect.min.x;//std::max(destRect.min.x, 0.0f);
+	trueDest.min.y = destRect.min.y;//std::max(destRect.min.y, 0.0f);
+	trueDest.max.x = destRect.max.x;//std::min(destRect.max.x, (float)buffer.w);
+	trueDest.max.y = destRect.max.y;//std::min(destRect.max.y, (float)buffer.h);
 
 	int style = mat._texData == NULL ? 0 : 1 ;
 
@@ -58,12 +59,18 @@ void material::drawTo(Material& mat, Renderer& buffer, const alfar::Rect& srcRec
 
 	for(int y = 0; y < destH; ++y)
 	{
+		int dy = trueDest.min.y + y;
+		int sy = srcRect.min.y + (y/(float)destH) * srcH;
+		if(dy < 0 || dy >= buffer.h)
+				continue;
+
 		for(int x = 0; x < destW; ++x)
 		{
 			int dx = trueDest.min.x + x;
-			int dy = trueDest.min.y + y;
 			int sx = srcRect.min.x + (x/(float)destW) * srcW;
-			int sy = srcRect.min.y + (y/(float)destH) * srcH;
+
+			if(dx < 0 || dx >= buffer.w)
+				continue;
 
 			switch(style)
 			{
@@ -81,10 +88,29 @@ void material::drawTo(Material& mat, Renderer& buffer, const alfar::Rect& srcRec
 
 //--------------------------------------------------------------
 
-void material::loadImg(Material& mat, int* data, int w, int h)
+void material::loadImg(Material& mat, unsigned int* data, int x, int y, int w, int h, int srcW, int srcH, const bool flip)
 {
 	mat.w = w;
 	mat.h = h;
-	mat._texData = new int[w*h];
-	memcpy(mat._texData, data, h*w*sizeof(int));
+	mat._texData = new unsigned int[w*h];
+
+	for(int j = 0; j < h; ++j)
+	{
+		for(int i = 0; i < w; ++i)
+		{
+			mat._texData[j * w + i] = reverseBytes(data[(y + j) * srcW + (x+i)]);
+		}
+	}
+}
+
+//=================================================
+
+void created(Material& mat, int i)
+{
+	material::init(mat);
+}
+
+void destroyed(Material& mat)
+{
+
 }

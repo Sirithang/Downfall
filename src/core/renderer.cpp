@@ -3,6 +3,9 @@
 #include "mapinfo.h"
 #include "array.h"
 #include "core/material.h"
+#include "core/inputmanager.h"
+#include "core/entity.h"
+#include "component/camera.h"
 #include <math.h>
 
 using namespace renderer;
@@ -15,27 +18,47 @@ void renderer::clearBuffer(Renderer& rend, int value)
 
 //========================================
 
-float angle = 0.0f;
-
 void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 {
-	//todo : debug remove
-	alfar::Vector2 camPos = {0,0};
-	alfar::Vector2 lookDir = {0,1};
+	int camID = camera::mainCam;
 
-	angle += 0.005f;
-	lookDir = alfar::vector2::normalize(alfar::vector2::rotate(lookDir, angle));
+	if(camID == -1)
+		return;
+
+	Camera& cam = CameraManager::getObject(camID);
+	Entity& player = EntityManager::getObject(cam._entity);
+
+	alfar::Vector2 lookDir = entity::getForward(player);
+
+	if(inputmanager::keyPressed(SDLK_z))
+	{
+		player.position = player.position + (lookDir * 0.01f);
+	}
+	else if(inputmanager::keyPressed(SDLK_s))
+	{
+		player.position = player.position - (lookDir * 0.01f);
+	}
+	
+	if(inputmanager::keyPressed(SDLK_d))
+	{
+		player.angle += -0.01f;
+	}
+	else if(inputmanager::keyPressed(SDLK_q))
+	{
+		player.angle += 0.01f;
+	}
 
 	alfar::Vector2 perpDir = {lookDir.y,-lookDir.x};
+	perpDir = perpDir * cam.planeSize;
 
 	for(int x = 0; x < rend.w; ++x)
 	{
 		float ratio = (x - (rend.w*0.5f)) / (rend.w*0.5f);
 
-		alfar::Vector2 dir = alfar::vector2::normalize(camPos + lookDir + alfar::vector2::mul(perpDir, ratio));
+		alfar::Vector2 dir = alfar::vector2::normalize(lookDir + (perpDir * ratio));
 
 		alfar::Ray2D ray;
-		ray.start = camPos;
+		ray.start = player.position;
 		ray.direction = dir;
 		ray.dist = 1000.0f;
 
@@ -43,27 +66,24 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 
 		if(inter.lineID >= 0)
 		{
-			alfar::Vector2 camToPts = ray.start + ray.direction * inter.distance;
-			alfar::Vector2 forwardProj = camPos + (lookDir * alfar::vector2::dot(camToPts, lookDir));
-			float dist = alfar::vector2::magnitude(forwardProj);
+			alfar::Vector2 camToPts = inter.point - player.position;
+			float dist = alfar::vector2::dot(camToPts, lookDir);
+
+			if(dist < 0.01f)
+				continue;
 
 			LineInfo ln = map._lines[inter.lineID];
 			Material& mat = MaterialManager::getObject(ln.material);
 
-			int h = 1.0f / dist * rend.h;
-			h = std::min(h, rend.h);
+			int h = std::abs(rend.h / dist);
 
 			int y = (rend.h / 2 - h/2);
 
-			alfar::Rect src = {{inter.purcentage * mat.w,0},{1,mat.h}};
+			float wrappedUV = inter.purcentage * lineinfo::length(ln);
+			wrappedUV = wrappedUV - std::floor(wrappedUV);
+
+			alfar::Rect src = {{wrappedUV * mat.w,0},{1,mat.h}};
 			alfar::Rect dst = {{x,y},{x+1,y+h}};
-
-			/*for(int l = 0; l < h; ++l)
-			{
-				int y = (rend.h / 2 - h/2) + l;
-
-				rend.buffer[y * rend.w + x] = 0x00FF0000;
-			}*/
 
 			material::drawTo(mat, rend, src, dst);
 		}

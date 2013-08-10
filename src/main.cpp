@@ -3,14 +3,21 @@
 #include "core/renderer.h"
 #include "mapinfo.h"
 #include "core/material.h"
+#include "core/inputmanager.h"
+#include "core/entity.h"
+#include "component/camera.h"
+#include "editor/mapdisplay.h"
 
 #include "helper/lodepng.h"
+
 
 int main(int argc, char* argv[])
 {
 	foundation::memory_globals::init();
 
 	MaterialManager::init();
+	EntityManager::init();
+	CameraManager::init();
 
 	SDL_Window *win = NULL;
     SDL_Renderer *renderer = NULL;
@@ -27,7 +34,7 @@ int main(int argc, char* argv[])
 	Renderer rend;
 	rend.w = width;
 	rend.h = height;
-	rend.buffer = new int[rend.h * rend.w];
+	rend.buffer = new unsigned int[rend.h * rend.w];
 
 	int matID = MaterialManager::createObject();
 
@@ -35,20 +42,39 @@ int main(int argc, char* argv[])
 	material::init(mat);
 
 	unsigned error;
-	int* image;
+	unsigned int* image;
 	unsigned int w, h;
 
-	error = lodepng_decode32_file((unsigned char**)&image, &w, &h, "data/pattern.png");
+	error = lodepng_decode32_file((unsigned char**)&image, &w, &h, "data/originalWolf.png");
 	if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
 
-	material::loadImg(mat, image, w, h);
+	material::loadImg(mat, image, 0, 0, 64, 64, w, h, true);
+
+	int matID2 = MaterialManager::createObject();
+
+	Material& mat2 = MaterialManager::getObject(matID2);
+	material::init(mat2);
+
+	material::loadImg(mat2, image, 64, 0, 64, 64, w, h, true);
+
 	free(image);
 
 	mat.color = 0xFF000000;
 
 	MapInfo map;
-	const LineInfo lI = {{-2,2}, {2,2}, 1, matID};
+	LineInfo lI = {{-2,2}, {2,2}, 1, matID};
 	mapinfo::addLine(map, lI);
+	LineInfo lI2 = {{2,2}, {2,-2}, 1, matID2};
+	mapinfo::addLine(map, lI2);
+
+	editor::MapDisplay mapdisp;
+	editor::mapdisplay::open(mapdisp, map);
+
+	Entity& p = EntityManager::createAndGet();
+	p.position.y = -3;
+
+	Camera& c = camera::addToEntity(p);
+	
 
     while (1) {
             SDL_Event e;
@@ -58,6 +84,8 @@ int main(int argc, char* argv[])
                     }       
             }
 
+			inputmanager::update();
+
 			renderer::clearBuffer(rend, 0x00000000);
 			renderer::raytraceMap(rend, map);
 
@@ -66,6 +94,8 @@ int main(int argc, char* argv[])
 			SDL_LockTexture(writableTex, NULL, (void**)&pixels, &pitch);
 			memcpy(pixels, rend.buffer, rend.w * rend.h * sizeof(int));
 			SDL_UnlockTexture(writableTex);
+
+			editor::mapdisplay::update(mapdisp, map);
 
             SDL_RenderClear(renderer);
 			SDL_RenderCopy(renderer, writableTex, NULL, NULL);

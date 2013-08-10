@@ -14,20 +14,26 @@ RayIntersect lineinfo::rayCheck(const alfar::Ray2D inRay, const LineInfo* inLine
 	{
 		LineInfo line = inLines[i];
 
-		alfar::Vector2 lineV = alfar::vector2::sub(line.end, line.start);
-		alfar::Vector2 rayToLine = alfar::vector2::sub(line.start, inRay.start);
+		alfar::Vector2 lineV = line.end - line.start;
+		alfar::Vector2 rayToLine = line.start - inRay.start;
 
-		if(alfar::vector2::dot(lineV, inRay.direction) < 0.000001f)
+		if(std::abs(alfar::vector2::dot(lineV, inRay.direction)) < 0.000001f)
 			continue; // the two vector are coolinear or nearly.
 
-		float s = (rayPerp.y * rayToLine.x - rayPerp.x * rayToLine.y) / (rayPerp.x * lineV.y - rayPerp.y * lineV.x);
+		float uv = (inRay.direction.x * lineV.y - inRay.direction.y * lineV.x);
+		float s = (inRay.direction.y * rayToLine.x - inRay.direction.x * rayToLine.y) / uv;
 
 		if(s < 0.0f || s > 1.0f)
 			continue;
 
+		float t = (lineV.y * rayToLine.x - lineV.x * rayToLine.y) / uv;
+
+		if(t < 0)
+			continue;
+
 		alfar::Vector2 pts = alfar::vector2::add(line.start, alfar::vector2::mul(lineV, s));
 
-		float d = alfar::vector2::sqrMagnitude(alfar::vector2::sub(pts, inRay.start));
+		float d = alfar::vector2::sqrMagnitude(pts - inRay.start);
 
 		if(d < ret.distance)
 		{
@@ -39,6 +45,13 @@ RayIntersect lineinfo::rayCheck(const alfar::Ray2D inRay, const LineInfo* inLine
 	}
 
 	return ret;
+}
+
+//------
+
+float lineinfo::length(LineInfo& line)
+{
+	return alfar::vector2::magnitude(line.end - line.start);
 }
 
 

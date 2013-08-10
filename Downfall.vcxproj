@@ -62,7 +62,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./ext/SDL/lib/x86;./ext/libpng/lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng.lib;SDL2main.lib;SDL2.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,16 +89,26 @@
     <ClCompile Include="ext\foundation\src\memory.cpp" />
     <ClCompile Include="ext\foundation\src\murmur_hash.cpp" />
     <ClCompile Include="ext\foundation\src\string_stream.cpp" />
+    <ClCompile Include="src\component\camera.cpp" />
+    <ClCompile Include="src\core\entity.cpp" />
+    <ClCompile Include="src\core\inputmanager.cpp" />
     <ClCompile Include="src\core\mapinfo.cpp" />
     <ClCompile Include="src\core\material.cpp" />
     <ClCompile Include="src\core\renderer.cpp" />
+    <ClCompile Include="src\editor\mapdisplay.cpp" />
     <ClCompile Include="src\helpers\lodepng.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\component\camera.h" />
+    <ClInclude Include="include\core\component.h" />
+    <ClInclude Include="include\core\entity.h" />
+    <ClInclude Include="include\core\inputmanager.h" />
     <ClInclude Include="include\core\material.h" />
     <ClInclude Include="include\core\objectmanager.h" />
     <ClInclude Include="include\core\renderer.h" />
+    <ClInclude Include="include\editor\mapdisplay.h" />
+    <ClInclude Include="include\helper\helpers.h" />
     <ClInclude Include="include\helper\lodepng.h" />
     <ClInclude Include="include\mapinfo.h" />
     <ClInclude Include="include\map_types.h" />

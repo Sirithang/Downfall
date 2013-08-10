@@ -9,7 +9,7 @@ struct Material
 	//color in 32bit RGBA 0xRRGGBBAA
 	int color;
 	//NULL if no tex.
-	int* _texData;
+	unsigned int* _texData;
 	int w,h;
 };
 
@@ -17,7 +17,8 @@ namespace material
 {
 	void init(Material& mat, int* texData = 0, int w = 0, int h = 0, int color = 0xFFFFFFFF);
 
-	void loadImg(Material& mat, int* data, int w, int h);
+	/// if flip is true, it reverse the bit order of each pixel (RGBA to ABGR) usefull ofr endianess.
+	void loadImg(Material& mat, unsigned int* data, int x, int y, int w, int h, int srcW, int srcH, const bool flip = false);
 
 	//draw the entire texData, if some, to the buffer.
 	void drawTo(Material& mat, Renderer& buffer, int x, int y);
@@ -26,5 +27,8 @@ namespace material
 	//draw srcRect to destRect(scaled to that size)
 	void drawTo(Material& mat, Renderer& buffer, const alfar::Rect& srcRect, const alfar::Rect& destRect);
 }
+
+void created(Material& mat, int i);
+void destroyed(Material& mat);
 
 typedef ObjectManager<Material, 256> MaterialManager;

@@ -31,6 +31,18 @@
     <Filter Include="Source Files\helper">
       <UniqueIdentifier>{d3cbb344-58f8-469d-8594-e06c1f57d7ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\editor">
+      <UniqueIdentifier>{cf8ba2ab-7244-47fc-99a0-7e8c1bd18399}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\editor">
+      <UniqueIdentifier>{c56ba7fa-8778-44c9-9073-75ee32f5182d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\component">
+      <UniqueIdentifier>{f6acfaa7-1691-4d41-9538-5773da118b9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\component">
+      <UniqueIdentifier>{8b2b30bf-1c08-48f7-a767-fae9bdf2c14b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -56,6 +68,18 @@
     </ClCompile>
     <ClCompile Include="src\helpers\lodepng.cpp">
       <Filter>Source Files\helper</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\inputmanager.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor\mapdisplay.cpp">
+      <Filter>Source Files\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\component\camera.cpp">
+      <Filter>Source Files\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\entity.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +121,24 @@
     </ClInclude>
     <ClInclude Include="include\helper\lodepng.h">
       <Filter>Header Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="include\helper\helpers.h">
+      <Filter>Header Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\inputmanager.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\editor\mapdisplay.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\component.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\component\camera.h">
+      <Filter>Header Files\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\entity.h">
+      <Filter>Header Files\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

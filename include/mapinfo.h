@@ -4,6 +4,7 @@
 
 namespace lineinfo
 {
+	float length(LineInfo& line);
 	RayIntersect rayCheck(const alfar::Ray2D inRay, const LineInfo* inLines, int number = 1);
 }
 

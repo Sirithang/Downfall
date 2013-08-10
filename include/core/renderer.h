@@ -4,7 +4,7 @@
 
 struct Renderer
 {
-	int* buffer;
+	unsigned int* buffer;
 	int w,h;
 };
 
