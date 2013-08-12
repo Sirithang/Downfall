@@ -19,11 +19,17 @@ public:
 
 	static int createObject();
 	static void freeObject(int i);
-	static T& getObject(int i);
+	static inline T& getObject(int i);
 
 	//if you use this function, avoid stocking the return vaue, stock it's index instead (you need to have stocked it in the object in the created func)
 	//(this can cause leak if you loose the object & its index)
 	static T& createAndGet();
+
+	static T* getDataPtr(uint32_t& size)
+	{
+		size = foundation::array::size(_instance->_objects);
+		return _instance->_objects._data;
+	}
 };
 
 //=======================================

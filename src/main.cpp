@@ -8,6 +8,8 @@
 #include "component/camera.h"
 #include "editor/mapdisplay.h"
 
+#include "math/vector2.h"
+
 #include "helper/lodepng.h"
 
 
@@ -18,6 +20,7 @@ int main(int argc, char* argv[])
 	MaterialManager::init();
 	EntityManager::init();
 	CameraManager::init();
+	VertexManager::init();
 
 	SDL_Window *win = NULL;
     SDL_Renderer *renderer = NULL;
@@ -62,10 +65,18 @@ int main(int argc, char* argv[])
 	mat.color = 0xFF000000;
 
 	MapInfo map;
-	LineInfo lI = {{-2,2}, {2,2}, 1, matID};
+
+	MapVertex& vert = mapvertex::add(alfar::vector2::create(-2, 2));
+	MapVertex& vert2 = mapvertex::add(alfar::vector2::create(2, 2));
+	MapVertex& vert3 = mapvertex::add(alfar::vector2::create(2, -2));
+
+	mapvertex::createLine(vert, vert2, map);
+	mapvertex::createLine(vert2, vert3, map);
+
+	/*LineInfo lI = {{-2,2}, {2,2}, 1, matID};
 	mapinfo::addLine(map, lI);
 	LineInfo lI2 = {{2,2}, {2,-2}, 1, matID2};
-	mapinfo::addLine(map, lI2);
+	mapinfo::addLine(map, lI2);*/
 
 	editor::MapDisplay mapdisp;
 	editor::mapdisplay::open(mapdisp, map);

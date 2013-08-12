@@ -2,6 +2,97 @@
 #include "math/vector2.h"
 #include "array.h"
 
+void created(MapVertex& vert, int i)
+{
+	vert._index = i;
+	vert._nbLines = 0;
+	vert._position.x = 0;
+	vert._position.y = 0;
+
+	for(int i = 0; i < 128; ++i)
+	{
+		vert._linkedLines[i].idx = -1;
+	}
+}
+
+MapVertex& mapvertex::add(alfar::Vector2 pos)
+{
+	MapVertex& vert = VertexManager::createAndGet();
+
+	vert._position = pos;
+
+	return vert;
+}
+
+void mapvertex::move(MapVertex& vert, MapInfo& info, alfar::Vector2 pos)
+{
+	vert._position = pos;
+
+	for(int i = 0; i < vert._nbLines; ++i)
+	{
+		if(vert._linkedLines[i].idx == -1)
+			continue;
+
+		if(vert._linkedLines[i].side == 0)
+		{
+			info._lines[vert._linkedLines[i].idx].start = vert._position = pos;
+		}
+		else
+		{
+			info._lines[vert._linkedLines[i].idx].end = vert._position = pos;
+		}
+	}
+}
+
+LineInfo& mapvertex::createLine(MapVertex& start, MapVertex& end, MapInfo& map)
+{
+	LineInfo line;
+
+	line.start = start._position;
+	line.startVertex = start._index;
+
+	line.end = end._position;
+	line.endVertex = end._index;
+
+	line.material = 0;
+
+	line = mapinfo::addLine(map, line);
+
+	mapvertex::addLineLink(start, line, 0);
+	mapvertex::addLineLink(end, line, 1);
+
+	return line;
+}
+
+void mapvertex::removeLine(MapVertex& vert, LineInfo& line)
+{
+	for(int i = 0; i < vert._nbLines; ++i)
+	{
+		if(vert._linkedLines[i].idx == line._idx)
+		{
+			vert._linkedLines[i].idx = -1;
+			if(i == vert._nbLines -1)
+				vert._nbLines -= 1;
+
+			return;
+		}
+	}
+}
+
+void mapvertex::addLineLink(MapVertex& vertex, const LineInfo& line, char side)
+{
+	int i = 0;
+	while(vertex._linkedLines[i].idx != -1)
+		++i;
+
+	vertex._linkedLines[i].idx = line._idx;
+	vertex._linkedLines[i].side = side;
+	vertex._nbLines = i + 1;
+}
+
+
+//=========================================================================================
+
 RayIntersect lineinfo::rayCheck(const alfar::Ray2D inRay, const LineInfo* inLines, int number)
 {
 	RayIntersect ret;
@@ -60,12 +151,39 @@ float lineinfo::length(LineInfo& line)
 using namespace mapinfo;
 
 MapInfo::MapInfo()
-	: _lines(foundation::memory_globals::default_allocator())
+	: _lines(foundation::memory_globals::default_allocator()),
+	_freeLinesIds(foundation::memory_globals::default_allocator())
 {
 
 }
 
-void mapinfo::addLine(MapInfo& map, const LineInfo& info)
+LineInfo& mapinfo::addLine(MapInfo& map, const LineInfo& info)
 {
-	foundation::array::push_back(map._lines, info);
+	if(foundation::array::size(map._freeLinesIds) > 0)
+	{
+		int id = foundation::array::back(map._freeLinesIds);
+		foundation::array::pop_back(map._freeLinesIds);
+
+		map._lines[id] = info;
+		map._lines[id]._idx = id;
+
+		return map._lines[id];
+	}
+	else
+	{
+		foundation::array::push_back(map._lines, info);
+		LineInfo& info = foundation::array::back(map._lines);
+		info._idx = foundation::array::size(map._lines) - 1;
+
+		return info;
+	}
+}
+
+void mapinfo::removeLine(MapInfo& map, int id)
+{
+	mapvertex::removeLine(VertexManager::getObject(map._lines[id].startVertex), map._lines[id]);
+	mapvertex::removeLine(VertexManager::getObject(map._lines[id].endVertex), map._lines[id]);
+
+	map._lines[id]._idx = -1;
+	foundation::array::push_back(map._freeLinesIds, id);
 }

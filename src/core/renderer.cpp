@@ -32,20 +32,20 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 
 	if(inputmanager::keyPressed(SDLK_z))
 	{
-		player.position = player.position + (lookDir * 0.01f);
+		player.position = player.position + (lookDir * 0.1f);
 	}
 	else if(inputmanager::keyPressed(SDLK_s))
 	{
-		player.position = player.position - (lookDir * 0.01f);
+		player.position = player.position - (lookDir * 0.1f);
 	}
 	
 	if(inputmanager::keyPressed(SDLK_d))
 	{
-		player.angle += -0.01f;
+		player.angle += -0.05f;
 	}
 	else if(inputmanager::keyPressed(SDLK_q))
 	{
-		player.angle += 0.01f;
+		player.angle += 0.05f;
 	}
 
 	alfar::Vector2 perpDir = {lookDir.y,-lookDir.x};
