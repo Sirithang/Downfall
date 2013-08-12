@@ -30,7 +30,7 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 
 	alfar::Vector2 lookDir = entity::getForward(player);
 
-	if(inputmanager::keyPressed(SDLK_z))
+	if(inputmanager::keyPressed(SDLK_w))
 	{
 		player.position = player.position + (lookDir * 0.1f);
 	}
@@ -43,7 +43,7 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 	{
 		player.angle += -0.05f;
 	}
-	else if(inputmanager::keyPressed(SDLK_q))
+	else if(inputmanager::keyPressed(SDLK_a))
 	{
 		player.angle += 0.05f;
 	}
@@ -69,7 +69,7 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 			alfar::Vector2 camToPts = inter.point - player.position;
 			float dist = alfar::vector2::dot(camToPts, lookDir);
 
-			if(dist < 0.01f)
+			if(dist < 0.1f)
 				continue;
 
 			LineInfo ln = map._lines[inter.lineID];

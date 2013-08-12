@@ -89,13 +89,21 @@ int main(int argc, char* argv[])
 
     while (1) {
             SDL_Event e;
+			int wheel = 0;
+
             if (SDL_PollEvent(&e)) {
-                    if (e.type == SDL_QUIT) {
+                    if (e.type == SDL_QUIT) 
+					{
                             break;
-                    }       
+                    }
+
+					if(e.type == SDL_MOUSEWHEEL)
+					{
+						wheel = e.wheel.y;
+					}
             }
 
-			inputmanager::update();
+			inputmanager::update(wheel);
 
 			renderer::clearBuffer(rend, 0x00000000);
 			renderer::raytraceMap(rend, map);

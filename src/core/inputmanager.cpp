@@ -2,7 +2,7 @@
 
 InputManager _manager;
 
-void inputmanager::update()
+void inputmanager::update(int wheel)
 {
 	const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
 
@@ -16,10 +16,12 @@ void inputmanager::update()
 	_manager._mousePos.x = x;
 	_manager._mousePos.y = y;
 
-	for(int i = 0; i < 3; ++i)
+	for(int i = 1; i < MouseState::MAX; ++i)
 	{
-		_manager._mouseButton[i].pressed = buttons & SDL_BUTTON(i) != 0;
+		_manager._mouseButton[i].pressed = (buttons & SDL_BUTTON(i)) != 0;
 	}
+
+	_manager._wheel = wheel;
 }
 
 //===============================================
@@ -34,9 +36,14 @@ alfar::Vector2 inputmanager::mousePos()
 	return _manager._mousePos;
 }
 
-bool inputmanager::mousePressed(int button)
+bool inputmanager::mousePressed(MouseState::MouseButton button)
 {
 	return _manager._mouseButton[button].pressed;
+}
+
+int inputmanager::mouseWheel()
+{
+	return _manager._wheel;
 }
 
 bool inputmanager::keyPressed(uint32_t keycode)

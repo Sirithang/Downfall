@@ -126,11 +126,13 @@ void editor::mapdisplay::draw(MapDisplay& disp)
 			SDL_SetRenderDrawColor(disp._renderer, 128, 255, 0, 255);
 		}
 
+		int s = 0.2f * scale.x;
+
 		SDL_Rect r;
-		r.x = (vert[i]._position.x - center.x) * scale.x - 5 + rect.x;
-		r.y = (vert[i]._position.y - center.y) * scale.y - 5 + rect.y;
-		r.w = 10;
-		r.h = 10;
+		r.x = (vert[i]._position.x - center.x) * scale.x - s*0.5f + rect.x;
+		r.y = (vert[i]._position.y - center.y) * scale.y - s*0.5f + rect.y;
+		r.w = s;
+		r.h = s;
 
 		SDL_RenderDrawRect(disp._renderer, &r);
 	}
@@ -140,7 +142,11 @@ void editor::mapdisplay::draw(MapDisplay& disp)
 
 //==========================================
 
+//control info
 alfar::Vector2 clickedPos;
+
+enum Mode{NONE, VERT_MOVE, VERT_CREATE, CAM_MOV};
+Mode currentMode = NONE;
 
 void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 {
@@ -151,13 +157,10 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 	if(idCam < 0)
 		return;
 
-	if(!inputmanager::mousePressed(0))
-		return;
-
+	
+	alfar::Vector2 mouse = inputmanager::mousePos();
 	Camera& cam = CameraManager::getObject(idCam);
 	Entity&  player = EntityManager::getObject(cam._entity);
-
-	alfar::Vector2 mouse = inputmanager::mousePos();
 
 	alfar::Vector2 worldPos;
 	worldPos.x = (mouse.x - DISPLAY_W/2.0f) * (1.0f/scale.x) + center.x;
@@ -165,20 +168,74 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 
 	uint32_t size;
 	MapVertex* vert = VertexManager::getDataPtr(size);
-	for(int i = 0; i < size; ++i)
-	{
-		if(vert[i]._index == -1)
-			continue;
 
-		if(std::abs(vert[i]._position.x - worldPos.x) < 0.5f && std::abs(vert[i]._position.y - worldPos.y) < 0.5f)
+	if(inputmanager::mousePressed(MouseState::LEFT))
+	{
+		if(currentMode == NONE)
 		{
-			disp._vertSelected = i;
-			break;
+			if(inputmanager::keyPressed(SDLK_LCTRL))
+			{
+				currentMode = VERT_CREATE;
+
+				mapvertex::add(worldPos);
+			}
+			else
+			{
+				// -- check for which vertex is selected;
+				currentMode = VERT_MOVE;
+				disp._vertSelected = -1;
+				for(int i = 0; i < size; ++i)
+				{
+					if(vert[i]._index == -1)
+						continue;
+
+					if(std::abs(vert[i]._position.x - worldPos.x) < 0.5f && std::abs(vert[i]._position.y - worldPos.y) < 0.5f)
+					{
+						disp._vertSelected = i;
+						break;
+					}
+				}
+			}
+			clickedPos = mouse;
 		}
 	}
-
-	if(disp._vertSelected != -1)
+	else if(inputmanager::mousePressed(MouseState::RIGHT))
 	{
-		mapvertex::move(vert[disp._vertSelected], info, worldPos);
+		if(currentMode == NONE)
+		{
+			currentMode = CAM_MOV;
+			clickedPos = mouse;
+		}
+	}
+	else
+	{
+		currentMode = NONE;
+	}
+
+	scale = scale + alfar::vector2::create(3, -3) * inputmanager::mouseWheel();
+	scale.x = scale.x < 0 ? 0 : scale.x;
+	scale.y = scale.y > 0 ? 0 : scale.y;
+
+	if(currentMode == VERT_MOVE)
+	{
+		if(disp._vertSelected != -1)
+		{
+			alfar::Vector2 p = worldPos;
+			if(inputmanager::keyPressed(SDLK_LALT))
+			{
+				p.x = std::floor(p.x);
+				p.y = std::floor(p.y);
+			}
+
+			mapvertex::move(vert[disp._vertSelected], info, p);
+		}
+	}
+	else if(currentMode == CAM_MOV)
+	{
+		alfar::Vector2 delta = mouse - clickedPos;
+		clickedPos = mouse;
+
+		center.x -= delta.x * (1.0f/scale.x);
+		center.y -= delta.y * (1.0f/scale.y);
 	}
 }
