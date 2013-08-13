@@ -5,7 +5,9 @@
 #include "core/material.h"
 #include "core/inputmanager.h"
 #include "core/entity.h"
+#include "core/collisionmanager.h"
 #include "component/camera.h"
+#include "component/spherecollider.h"
 #include "editor/mapdisplay.h"
 
 #include "math/vector2.h"
@@ -21,6 +23,7 @@ int main(int argc, char* argv[])
 	EntityManager::init();
 	CameraManager::init();
 	VertexManager::init();
+	SphereColliderManager::init();
 
 	SDL_Window *win = NULL;
     SDL_Renderer *renderer = NULL;
@@ -104,6 +107,10 @@ int main(int argc, char* argv[])
             }
 
 			inputmanager::update(wheel);
+
+			collisionmanager::reinit();
+			collisionmanager::testAgaintMap(map);
+			//collisionmanager::doCallbacks();
 
 			renderer::clearBuffer(rend, 0x00000000);
 			renderer::raytraceMap(rend, map);

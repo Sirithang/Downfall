@@ -56,3 +56,5 @@ struct RayIntersect
 	float purcentage;
 	alfar::Vector2 point;
 };
+
+//------------------------

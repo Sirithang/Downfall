@@ -81,6 +81,12 @@
     <ClCompile Include="src\core\entity.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\collisionmanager.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\component\spherecollider.cpp">
+      <Filter>Source Files\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\math\mat4x4.h">
@@ -138,6 +144,12 @@
       <Filter>Header Files\component</Filter>
     </ClInclude>
     <ClInclude Include="include\core\entity.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\component\spherecollider.h">
+      <Filter>Header Files\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\collisionmanager.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
   </ItemGroup>
