@@ -43,7 +43,7 @@ ObjectManager<T, DefaultSize>::ObjectManager()
 	_freeIDs(foundation::memory_globals::default_allocator()),
 	upperID(0)
 {
-	foundation::array::resize(_objects, DefaultSize);
+	foundation::array::reserve(_objects, DefaultSize);
 	foundation::array::reserve(_freeIDs, 64);
 }
 
@@ -67,6 +67,7 @@ int ObjectManager<T, DefaultSize>::createObject()
 	else
 	{
 		id = _instance->upperID;
+		foundation::array::push_back(_instance->_objects, T());
 		++_instance->upperID;
 	}
 

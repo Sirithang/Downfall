@@ -8,6 +8,7 @@
 #include "core/collisionmanager.h"
 #include "component/camera.h"
 #include "component/spherecollider.h"
+#include "component/behaviour.h"
 #include "editor/mapdisplay.h"
 
 #include "math/vector2.h"
@@ -24,6 +25,7 @@ int main(int argc, char* argv[])
 	CameraManager::init();
 	VertexManager::init();
 	SphereColliderManager::init();
+	BehaviourManager::init();
 
 	SDL_Window *win = NULL;
     SDL_Renderer *renderer = NULL;
@@ -88,7 +90,8 @@ int main(int argc, char* argv[])
 	p.position.y = -3;
 
 	Camera& c = camera::addToEntity(p);
-	
+	Behaviour& behave = BehaviourManager::createAndGet();
+	behaviour::setScriptFile(behave, "data/player.lua");
 
     while (1) {
             SDL_Event e;
@@ -107,6 +110,8 @@ int main(int argc, char* argv[])
             }
 
 			inputmanager::update(wheel);
+
+			behaviour::update();
 
 			collisionmanager::reinit();
 			collisionmanager::testAgaintMap(map);
