@@ -15,6 +15,11 @@ void created(MapVertex& vert, int i)
 	}
 }
 
+void destroyed(MapVertex& vert)
+{
+	vert._index = -1;
+}
+
 MapVertex& mapvertex::add(alfar::Vector2 pos)
 {
 	MapVertex& vert = VertexManager::createAndGet();
@@ -87,7 +92,32 @@ void mapvertex::addLineLink(MapVertex& vertex, const LineInfo& line, char side)
 
 	vertex._linkedLines[i].idx = line._idx;
 	vertex._linkedLines[i].side = side;
-	vertex._nbLines = i + 1;
+	vertex._nbLines = std::max((char)(i + 1), vertex._nbLines);
+}
+
+int mapvertex::getClosest(alfar::Vector2 position, float limit)
+{
+	uint32_t size;
+	MapVertex* vert = VertexManager::getDataPtr(size);
+
+	int ret = -1;
+	float closest = limit * limit;
+
+	for(int i = 0; i < size; ++i)
+	{
+		if(vert[i]._index == -1)
+			continue;
+
+		float sqrDist = alfar::vector2::sqrMagnitude(vert[i]._position - position);
+
+		if( sqrDist < closest)
+		{
+			closest = sqrDist;
+			ret = i;
+		}
+	}
+
+	return ret;
 }
 
 
@@ -104,6 +134,9 @@ RayIntersect lineinfo::rayCheck(const alfar::Ray2D inRay, const LineInfo* inLine
 	for(int i = 0; i < number; ++i)
 	{
 		LineInfo line = inLines[i];
+
+		if(line._idx == -1)
+			continue;
 
 		alfar::Vector2 lineV = line.end - line.start;
 		alfar::Vector2 rayToLine = line.start - inRay.start;
@@ -172,10 +205,10 @@ LineInfo& mapinfo::addLine(MapInfo& map, const LineInfo& info)
 	else
 	{
 		foundation::array::push_back(map._lines, info);
-		LineInfo& info = foundation::array::back(map._lines);
-		info._idx = foundation::array::size(map._lines) - 1;
+		LineInfo& i = foundation::array::back(map._lines);
+		i._idx = foundation::array::size(map._lines) - 1;
 
-		return info;
+		return i;
 	}
 }
 
@@ -186,4 +219,22 @@ void mapinfo::removeLine(MapInfo& map, int id)
 
 	map._lines[id]._idx = -1;
 	foundation::array::push_back(map._freeLinesIds, id);
+}
+
+void mapinfo::removeVertex(MapInfo& map, int id)
+{
+	MapVertex& vert = VertexManager::getObject(id);
+
+	int nbLine = vert._nbLines;
+	for(int i = 0; i < nbLine; ++i)
+	{
+		if(vert._linkedLines[i].idx == -1)
+			continue;
+
+		LineInfo& ln = map._lines[vert._linkedLines[i].idx];
+
+		mapinfo::removeLine(map, ln._idx);
+	}
+
+	VertexManager::freeObject(vert._index);
 }

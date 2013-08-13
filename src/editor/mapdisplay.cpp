@@ -55,9 +55,28 @@ void editor::mapdisplay::draw(MapDisplay& disp)
 	rect.w = DISPLAY_W;
 	rect.h = DISPLAY_H;
 
+	//draw grid
+	SDL_SetRenderDrawColor(disp._renderer, 64, 64, 64, 255);
 
-	
+	//center clamped to the closest integer value
+	int worldCenterX = center.x;
+	int worldCenterY = center.y;
 
+	for(int i = -10; i < 10; ++i)
+	{
+		SDL_RenderDrawLine(disp._renderer,	(worldCenterX + i - center.x) * scale.x + rect.x, 
+											(worldCenterY + 10 - center.y) * scale.y + rect.y, 
+											(worldCenterX + i - center.x) * scale.x + rect.x, 
+											(worldCenterY - 10 - center.y) * scale.y + rect.y);
+	}
+
+	for(int j = -10; j < 10; ++j)
+	{
+		SDL_RenderDrawLine(disp._renderer,	(worldCenterX + 10 - center.x) * scale.x + rect.x, 
+											(worldCenterY + j - center.y) * scale.y + rect.y, 
+											(worldCenterX - 10 - center.x) * scale.x + rect.x, 
+											(worldCenterY + j - center.y) * scale.y + rect.y);
+	}
 
 	//DrawPlayer
 	SDL_SetRenderDrawColor(disp._renderer, 0, 255, 0, 255);
@@ -94,13 +113,15 @@ void editor::mapdisplay::draw(MapDisplay& disp)
 			((player.position.y + dir.y * 200.0f) - center.y ) * scale.y + rect.y);
 
 	// Draw Level
-
-
 	SDL_SetRenderDrawColor(disp._renderer, 255, 0, 0, 255);
 
 	for(int i = 0; i < foundation::array::size(disp._map._lines); ++i)
 	{
 		LineInfo& info = disp._map._lines[i];
+
+		if(info._idx == -1)
+			continue;
+
 		SDL_RenderDrawLine(disp._renderer, 
 			(info.start.x - center.x) * scale.x + rect.x, 
 			(info.start.y - center.y)* scale.y + rect.y, 
@@ -177,24 +198,56 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 			{
 				currentMode = VERT_CREATE;
 
-				mapvertex::add(worldPos);
+				if(disp._vertSelected != -1)
+				{
+					int closest = mapvertex::getClosest(worldPos);
+
+					if(closest == -1)
+					{
+						MapVertex& v = mapvertex::add(worldPos);
+						closest = v._index;
+					}
+
+					mapvertex::createLine(VertexManager::getObject(disp._vertSelected), vert[closest], info);
+
+					disp._vertSelected = closest;
+				}
+			}
+			else if(inputmanager::keyPressed(SDLK_LSHIFT))
+			{
+				int close = mapvertex::getClosest(worldPos);
+				if(disp._vertSelected != -1 && close != -1)
+				{
+					MapVertex& v = vert[close];
+					MapVertex& v2 = vert[disp._vertSelected];
+
+					bool create = true;
+					for(int i = 0; i < v._nbLines; ++i)
+					{
+						if(v._linkedLines[i].idx == -1)
+							continue;
+
+						for(int j = 0; j < v2._nbLines; ++j)
+						{
+							if(v2._linkedLines[j].idx == -1)
+								continue;
+
+							if(v._linkedLines[i].idx == v2._linkedLines[j].idx)
+								create = false;
+						}
+					}
+
+					if(create)
+					{
+						mapvertex::createLine(v2, v, info);
+					}
+				}
 			}
 			else
 			{
 				// -- check for which vertex is selected;
 				currentMode = VERT_MOVE;
-				disp._vertSelected = -1;
-				for(int i = 0; i < size; ++i)
-				{
-					if(vert[i]._index == -1)
-						continue;
-
-					if(std::abs(vert[i]._position.x - worldPos.x) < 0.5f && std::abs(vert[i]._position.y - worldPos.y) < 0.5f)
-					{
-						disp._vertSelected = i;
-						break;
-					}
-				}
+				disp._vertSelected = mapvertex::getClosest(worldPos);
 			}
 			clickedPos = mouse;
 		}
@@ -237,5 +290,16 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 
 		center.x -= delta.x * (1.0f/scale.x);
 		center.y -= delta.y * (1.0f/scale.y);
+	}
+
+	//====keyboard
+
+	if(inputmanager::keyPressed(SDLK_DELETE))
+	{
+		if(disp._vertSelected != -1)
+		{
+			mapinfo::removeVertex(info, disp._vertSelected);
+			disp._vertSelected = -1;
+		}
 	}
 }

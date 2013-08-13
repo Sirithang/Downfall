@@ -18,7 +18,7 @@ struct MapVertex
 	MapLink _linkedLines[128];
 	char _nbLines;
 
-	uint16_t _index;
+	int16_t _index;
 };
 
 typedef ObjectManager<MapVertex, 512> VertexManager;
