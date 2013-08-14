@@ -2,7 +2,8 @@
 
 enum ComponentType
 {
-	CAMERA
+	CAMERA,
+	BEHAVIOUR
 };
 
 struct Component

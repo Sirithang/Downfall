@@ -1,10 +1,17 @@
 #include "component/behaviour.h"
+#include "core/inputmanager.h"
+#include "SDL.h"
 
 void created(Behaviour& b, int i)
 {
 	b._idx = i;
+	b._entity = -1;
+
+	
 	b._luaState = lua_open();
 	luaL_openlibs(b._luaState);
+
+	behaviour::setupScript(b);
 }
 
 void behaviour::update()
@@ -14,10 +21,15 @@ void behaviour::update()
 
 	for(int i = 0; i < nb; ++i)
 	{
+		if(bs[i]._luaState == NULL)
+			continue;
+
 		lua_getglobal(bs[i]._luaState, "onUpdate");
 		if (lua_pcall(bs[i]._luaState, 0, 0, 0) != 0)
 		{
-			
+			printf("error running function");
+			printf(lua_tostring(bs[i]._luaState, -1));
+			lua_pop(bs[i]._luaState, 1);
 		}
 	}
 }
@@ -41,11 +53,21 @@ void behaviour::setScriptFile(Behaviour& b, const char* file)
 		
 		if (lua_pcall(b._luaState, 0, 0, 0) != 0)
 		{
-			printf("error running function");
-			printf(lua_tostring(b._luaState, -1));
+			printf("error running function \n");
+			printf("%s \n",lua_tostring(b._luaState, -1));
 			lua_pop(b._luaState, 1);
 		}
 	}
+}
+
+void behaviour::attacheToEntity(Behaviour& b, Entity& e)
+{
+	ComponentInfo info;
+	info._idx = b._idx;
+	info._type = BEHAVIOUR;
+
+	entity::addComponentInfo(e, info);
+	b._entity = e._idx;
 }
 
 //------
@@ -78,16 +100,33 @@ static const struct luaL_reg behaviourLib [] =
 	{"setPosition", behaviour::functions::setPosition},
 	{"getPosition", behaviour::functions::getPosition},
 	{"isKeyPressed", behaviour::functions::isKeyPressed},
+	{"getDirection", behaviour::functions::getDirection},
+	{"getAngle", behaviour::functions::getAngle},
+	{"setAngle", behaviour::functions::setAngle},
 	{NULL, NULL}
 };
 
- void setupScript(Behaviour& bs)
+ void behaviour::setupScript(Behaviour& bs)
 {
 	lua_State* L = bs._luaState;
 
-	luaL_openlib(bs._luaState, "DF", behaviourLib, 0);
-	
+	luaL_openlib(L, "DF", behaviourLib, 0);
 
+	//---- Global key Setup 
+
+	lua_newtable(L);
+	for(int i = 0 ; i < 512; ++i)
+	{
+		const char* keyname = SDL_GetKeyName(i);
+		if(strcmp(keyname, "") == 0)
+			continue;
+
+		lua_pushstring(L, keyname);
+		lua_pushinteger(L, i);
+		lua_settable(L, -3);
+	}
+	lua_setglobal(L, "KEYS");
+	
 	lua_pushlightuserdata(bs._luaState, (void*)bs._idx);
 	lua_setglobal(L, "this");
 }
@@ -97,15 +136,114 @@ static const struct luaL_reg behaviourLib [] =
 
  int behaviour::functions::isKeyPressed(lua_State* L)
 {
-	return 0;
+	int code = lua_tointeger(L, -1);
+
+	lua_pushboolean(L, inputmanager::keyPressed(code));
+
+	return 1;
 }
 
 int behaviour::functions::setPosition(lua_State* L)
 {
+	int curr = (int)lua_topointer(L, -1);
+
+	Behaviour& b = BehaviourManager::getObject(curr);
+
+	if(b._entity < 0)
+	{
+		return 0;
+	}
+
+	Entity& ent = EntityManager::getObject(b._entity);
+
+	float x = lua_tonumber(L, -1);
+	float y = lua_tonumber(L, -1);
+
+	ent.position.x = x;
+	ent.position.y = y;
+
 	return 0;
 }
 
 int behaviour::functions::getPosition(lua_State* L)
 {
-	return 0;
+	int curr = (int)lua_topointer(L, -1);
+
+	Behaviour& b = BehaviourManager::getObject(curr);
+
+	if(b._entity < 0)
+	{
+		lua_pushnumber(L, 0);
+		lua_pushnumber(L, 0);
+
+		return 2;
+	}
+
+	Entity& ent = EntityManager::getObject(b._entity);
+
+	lua_pushnumber(L, ent.position.x);
+	lua_pushnumber(L, ent.position.y);
+
+	return 2;
+}
+
+int behaviour::functions::getDirection(lua_State* L)
+{
+	int curr = (int)lua_topointer(L, -1);
+
+	Behaviour& b = BehaviourManager::getObject(curr);
+
+	if(b._entity < 0)
+	{
+		lua_pushnumber(L, 0);
+		lua_pushnumber(L, 0);
+
+		return 2;
+	}
+
+	Entity& ent = EntityManager::getObject(b._entity);
+	alfar::Vector2 dir = entity::getForward(ent);
+
+	lua_pushnumber(L, dir.x);
+	lua_pushnumber(L, dir.y);
+
+	return 2;
+}
+
+int behaviour::functions::getAngle(lua_State* L)
+{
+	int curr = (int)lua_topointer(L, -1);
+
+	Behaviour& b = BehaviourManager::getObject(curr);
+
+	if(b._entity < 0)
+	{
+		lua_pushnumber(L, 0);
+		return 1;
+	}
+
+	Entity& ent = EntityManager::getObject(b._entity);
+
+	lua_pushnumber(L, ent.angle);
+
+	return 1;
+}
+
+int behaviour::functions::setAngle(lua_State* L)
+{
+	int curr = (int)lua_topointer(L, -1);
+
+	Behaviour& b = BehaviourManager::getObject(curr);
+
+	if(b._entity < 0)
+	{
+		return 0;
+	}
+
+	Entity& ent = EntityManager::getObject(b._entity);
+
+	float angle = lua_tonumber(L, -1);
+	ent.angle = angle;
+
+	return 1;
 }

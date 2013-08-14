@@ -92,6 +92,7 @@ int main(int argc, char* argv[])
 	Camera& c = camera::addToEntity(p);
 	Behaviour& behave = BehaviourManager::createAndGet();
 	behaviour::setScriptFile(behave, "data/player.lua");
+	behaviour::attacheToEntity(behave, p);
 
     while (1) {
             SDL_Event e;
