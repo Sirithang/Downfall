@@ -90,6 +90,9 @@
     <ClCompile Include="src\component\behaviour.cpp">
       <Filter>Source Files\component</Filter>
     </ClCompile>
+    <ClCompile Include="src\component\sprite.cpp">
+      <Filter>Source Files\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\math\mat4x4.h">
@@ -156,6 +159,9 @@
       <Filter>Header Files\core</Filter>
     </ClInclude>
     <ClInclude Include="include\component\behaviour.h">
+      <Filter>Header Files\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\component\sprite.h">
       <Filter>Header Files\component</Filter>
     </ClInclude>
   </ItemGroup>

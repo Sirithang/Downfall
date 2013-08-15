@@ -212,6 +212,11 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 
 					disp._vertSelected = closest;
 				}
+				else
+				{
+					MapVertex& v = mapvertex::add(worldPos);
+					disp._vertSelected = v._index;
+				}
 			}
 			else if(inputmanager::keyPressed(SDLK_LSHIFT))
 			{

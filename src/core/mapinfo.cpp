@@ -251,9 +251,14 @@ bool mapinfo::sphereCollide(MapInfo& map, alfar::Vector2 pos, float radius)
 		LineInfo& ln = lines[j];
 
 		alfar::Vector2 startToCenter = pos - ln.start;
-		alfar::Vector2 lineV = alfar::vector2::normalize(ln.end - ln.start);
+		alfar::Vector2 lineV = ln.end - ln.start;
+		float mag = alfar::vector2::magnitude(lineV);
+		lineV = alfar::vector2::normalize(lineV);
 
 		float dot = alfar::vector2::dot(startToCenter, lineV);
+
+		if(dot < -radius || dot > mag + radius)
+				continue;
 
 		alfar::Vector2 testPts = ln.start + lineV*dot;
 

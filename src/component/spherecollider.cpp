@@ -30,9 +30,14 @@ foundation::Array<CollisionManager::Collision> spherecollider::testAgainstLines(
 			LineInfo& ln = lines[j];
 
 			alfar::Vector2 startToCenter = coll._position - ln.start;
-			alfar::Vector2 lineV = alfar::vector2::normalize(ln.end - ln.start);
+			alfar::Vector2 lineV = ln.end - ln.start;
+			float mag = alfar::vector2::magnitude(lineV);
+			lineV = alfar::vector2::normalize(lineV);
 
 			float dot = alfar::vector2::dot(startToCenter, lineV);
+
+			if(dot < -coll.radius || dot > mag + coll.radius)
+				continue;
 
 			alfar::Vector2 testPts = ln.start + lineV*dot;
 
