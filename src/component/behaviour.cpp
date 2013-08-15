@@ -1,5 +1,7 @@
 #include "component/behaviour.h"
 #include "core/inputmanager.h"
+#include "core/collisionmanager.h"
+#include "mapinfo.h"
 #include "SDL.h"
 
 void created(Behaviour& b, int i)
@@ -57,6 +59,22 @@ void behaviour::setScriptFile(Behaviour& b, const char* file)
 			printf("%s \n",lua_tostring(b._luaState, -1));
 			lua_pop(b._luaState, 1);
 		}
+
+		strcpy_s(b.file, file);
+	}
+}
+
+void behaviour::reloadAll()
+{
+	uint32_t size;
+	Behaviour* bs = BehaviourManager::getDataPtr(size);
+
+	for(int i = 0; i < size; ++i)
+	{
+		if(bs[i]._idx == -1)
+			continue;
+
+		behaviour::setScriptFile(bs[i], bs[i].file);
 	}
 }
 
@@ -68,6 +86,12 @@ void behaviour::attacheToEntity(Behaviour& b, Entity& e)
 
 	entity::addComponentInfo(e, info);
 	b._entity = e._idx;
+
+	Callback16 callback;
+	callback.f = behaviour::onCollision;
+	memcpy(callback.data, &b._idx, sizeof(b._idx));
+
+	collisionmanager::registerCallback(b._entity, callback);
 }
 
 //------
@@ -103,6 +127,7 @@ static const struct luaL_reg behaviourLib [] =
 	{"getDirection", behaviour::functions::getDirection},
 	{"getAngle", behaviour::functions::getAngle},
 	{"setAngle", behaviour::functions::setAngle},
+	{"sphereCollide", behaviour::functions::sphereCollide},
 	{NULL, NULL}
 };
 
@@ -131,6 +156,27 @@ static const struct luaL_reg behaviourLib [] =
 	lua_setglobal(L, "this");
 }
 
+ void behaviour::onCollision(void* data, unsigned int callerID, unsigned int collideeID)
+ {
+
+	 int idx;
+	 memcpy(&idx, data, sizeof(int));
+
+	 if(idx < 0)
+		 return;
+
+	 Behaviour& b = BehaviourManager::getObject(idx);
+
+	lua_getglobal(b._luaState, "onCollision");
+	lua_pushinteger(b._luaState, collideeID);
+		
+	if (lua_pcall(b._luaState, 1, 0, 0) != 0)
+	{
+		printf("error running function \n");
+		printf("%s \n",lua_tostring(b._luaState, -1));
+		lua_pop(b._luaState, 1);
+	}
+ }
 
  //=======================================================
 
@@ -145,7 +191,7 @@ static const struct luaL_reg behaviourLib [] =
 
 int behaviour::functions::setPosition(lua_State* L)
 {
-	int curr = (int)lua_topointer(L, -1);
+	int curr = (int)lua_topointer(L, 1);
 
 	Behaviour& b = BehaviourManager::getObject(curr);
 
@@ -156,8 +202,8 @@ int behaviour::functions::setPosition(lua_State* L)
 
 	Entity& ent = EntityManager::getObject(b._entity);
 
-	float x = lua_tonumber(L, -1);
-	float y = lua_tonumber(L, -1);
+	float x = lua_tonumber(L, 2);
+	float y = lua_tonumber(L, 3);
 
 	ent.position.x = x;
 	ent.position.y = y;
@@ -167,7 +213,7 @@ int behaviour::functions::setPosition(lua_State* L)
 
 int behaviour::functions::getPosition(lua_State* L)
 {
-	int curr = (int)lua_topointer(L, -1);
+	int curr = (int)lua_topointer(L, 1);
 
 	Behaviour& b = BehaviourManager::getObject(curr);
 
@@ -189,7 +235,7 @@ int behaviour::functions::getPosition(lua_State* L)
 
 int behaviour::functions::getDirection(lua_State* L)
 {
-	int curr = (int)lua_topointer(L, -1);
+	int curr = (int)lua_topointer(L, 1);
 
 	Behaviour& b = BehaviourManager::getObject(curr);
 
@@ -212,7 +258,7 @@ int behaviour::functions::getDirection(lua_State* L)
 
 int behaviour::functions::getAngle(lua_State* L)
 {
-	int curr = (int)lua_topointer(L, -1);
+	int curr = (int)lua_topointer(L, 1);
 
 	Behaviour& b = BehaviourManager::getObject(curr);
 
@@ -231,7 +277,7 @@ int behaviour::functions::getAngle(lua_State* L)
 
 int behaviour::functions::setAngle(lua_State* L)
 {
-	int curr = (int)lua_topointer(L, -1);
+	int curr = (int)lua_topointer(L, 1);
 
 	Behaviour& b = BehaviourManager::getObject(curr);
 
@@ -242,8 +288,22 @@ int behaviour::functions::setAngle(lua_State* L)
 
 	Entity& ent = EntityManager::getObject(b._entity);
 
-	float angle = lua_tonumber(L, -1);
+	float angle = lua_tonumber(L, 2);
 	ent.angle = angle;
+
+	return 1;
+}
+
+int behaviour::functions::sphereCollide(lua_State* L)
+{
+	float x = lua_tonumber(L, 1);
+	float y = lua_tonumber(L, 2);
+	float r = lua_tonumber(L, 3);
+
+	alfar::Vector2 pos = {x,y};
+	bool res = mapinfo::sphereCollide(*mapinfo::current, pos, r);
+
+	lua_pushboolean(L, res);
 
 	return 1;
 }

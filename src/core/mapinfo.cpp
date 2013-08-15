@@ -183,6 +183,8 @@ float lineinfo::length(LineInfo& line)
 
 using namespace mapinfo;
 
+MapInfo* mapinfo::current = NULL;
+
 MapInfo::MapInfo()
 	: _lines(foundation::memory_globals::default_allocator()),
 	_freeLinesIds(foundation::memory_globals::default_allocator())
@@ -237,4 +239,29 @@ void mapinfo::removeVertex(MapInfo& map, int id)
 	}
 
 	VertexManager::freeObject(vert._index);
+}
+
+bool mapinfo::sphereCollide(MapInfo& map, alfar::Vector2 pos, float radius)
+{
+	uint32_t nbLines = map._lines._size;
+	LineInfo* lines = map._lines._data;
+
+	for(int j = 0; j < nbLines; ++j)
+	{
+		LineInfo& ln = lines[j];
+
+		alfar::Vector2 startToCenter = pos - ln.start;
+		alfar::Vector2 lineV = alfar::vector2::normalize(ln.end - ln.start);
+
+		float dot = alfar::vector2::dot(startToCenter, lineV);
+
+		alfar::Vector2 testPts = ln.start + lineV*dot;
+
+		if(alfar::vector2::sqrMagnitude(pos - testPts) < radius*radius)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

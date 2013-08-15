@@ -6,6 +6,7 @@
 
 #include "core/collisionmanager.h"
 #include "array.h"
+#include "core/entity.h"
 
 struct SphereCollider : public Component
 {
@@ -20,5 +21,8 @@ void destroyed(SphereCollider& collider);
 
 namespace spherecollider
 {
+	void addToEntity(SphereCollider& collider, Entity& ent);
+	void syncWithEntity(SphereCollider& collider);
+
 	foundation::Array<CollisionManager::Collision> testAgainstLines(SphereCollider* colliders, LineInfo* lines, int nbCollider, int nbLines);
 }

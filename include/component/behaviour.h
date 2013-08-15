@@ -14,6 +14,7 @@ extern "C"
 struct Behaviour : public Component
 {
 	lua_State* _luaState;
+	char file[512];
 };
 
 typedef ObjectManager<Behaviour, 128> BehaviourManager;
@@ -26,7 +27,10 @@ namespace behaviour
 	void attacheToEntity(Behaviour& b, Entity& e);
 
 	void update();
+	void reloadAll();
 	void setupScript(Behaviour& bs);
+
+	void onCollision(void* data, unsigned int callerID, unsigned int collideeID);
 
 	namespace functions
 	{
@@ -36,5 +40,7 @@ namespace behaviour
 		int getDirection(lua_State* L);
 		int getAngle(lua_State* L);
 		int setAngle(lua_State* L);
+
+		int sphereCollide(lua_State* L);
 	}
 }

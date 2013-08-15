@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
 	mat.color = 0xFF000000;
 
 	MapInfo map;
+	mapinfo::current = &map;
 
 	MapVertex& vert = mapvertex::add(alfar::vector2::create(-2, 2));
 	MapVertex& vert2 = mapvertex::add(alfar::vector2::create(2, 2));
@@ -91,6 +92,10 @@ int main(int argc, char* argv[])
 
 	Camera& c = camera::addToEntity(p);
 	Behaviour& behave = BehaviourManager::createAndGet();
+
+	SphereCollider& col = SphereColliderManager::createAndGet();
+	spherecollider::addToEntity(col, p);
+
 	behaviour::setScriptFile(behave, "data/player.lua");
 	behaviour::attacheToEntity(behave, p);
 
@@ -112,11 +117,14 @@ int main(int argc, char* argv[])
 
 			inputmanager::update(wheel);
 
+			if(inputmanager::keyPressed(SDLK_F5))
+				behaviour::reloadAll();
+
 			behaviour::update();
 
 			collisionmanager::reinit();
 			collisionmanager::testAgaintMap(map);
-			//collisionmanager::doCallbacks();
+			collisionmanager::doCallbacks();
 
 			renderer::clearBuffer(rend, 0x00000000);
 			renderer::raytraceMap(rend, map);

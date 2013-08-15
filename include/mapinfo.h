@@ -32,7 +32,11 @@ namespace lineinfo
 
 namespace mapinfo
 {
+	extern MapInfo* current;
+
 	LineInfo& addLine(MapInfo& map, const LineInfo& info);
 	void removeLine(MapInfo& map, int id);
 	void removeVertex(MapInfo& map, int id);
+
+	bool sphereCollide(MapInfo& map, alfar::Vector2 pos, float radius);
 }

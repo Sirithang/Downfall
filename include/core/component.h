@@ -3,7 +3,8 @@
 enum ComponentType
 {
 	CAMERA,
-	BEHAVIOUR
+	BEHAVIOUR,
+	SPHERECOLLIDER
 };
 
 struct Component
