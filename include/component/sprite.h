@@ -7,6 +7,8 @@
 
 struct Sprite : public Component
 {
+	alfar::Rect uv;
+
 	int _material;
 };
 
@@ -16,7 +18,7 @@ void destroyed(Sprite& spr);
 
 namespace sprite
 {
-	void addToEntity(Sprite& spr, Entity);
+	void addToEntity(Sprite& spr, Entity& ent);
 
 	void drawAll(Renderer& rend);
 }

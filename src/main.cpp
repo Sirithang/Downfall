@@ -9,6 +9,7 @@
 #include "component/camera.h"
 #include "component/spherecollider.h"
 #include "component/behaviour.h"
+#include "component/sprite.h"
 #include "editor/mapdisplay.h"
 
 #include "math/vector2.h"
@@ -26,6 +27,7 @@ int main(int argc, char* argv[])
 	VertexManager::init();
 	SphereColliderManager::init();
 	BehaviourManager::init();
+	Spritemanager::init();
 
 	SDL_Window *win = NULL;
     SDL_Renderer *renderer = NULL;
@@ -40,9 +42,7 @@ int main(int argc, char* argv[])
 	writableTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
 
 	Renderer rend;
-	rend.w = width;
-	rend.h = height;
-	rend.buffer = new unsigned int[rend.h * rend.w];
+	renderer::create(rend, 800, 600);
 
 	int matID = MaterialManager::createObject();
 
@@ -56,14 +56,15 @@ int main(int argc, char* argv[])
 	error = lodepng_decode32_file((unsigned char**)&image, &w, &h, "data/originalWolf.png");
 	if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
 
-	material::loadImg(mat, image, 0, 0, 64, 64, w, h, true);
+	material::loadImg(mat, image, w, h, true);
 
 	int matID2 = MaterialManager::createObject();
-
 	Material& mat2 = MaterialManager::getObject(matID2);
 	material::init(mat2);
 
-	material::loadImg(mat2, image, 64, 0, 64, 64, w, h, true);
+	error = lodepng_decode32_file((unsigned char**)&image, &w, &h, "data/goblin.png");
+	if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
+	material::loadImg(mat2, image, w, h, true);
 
 	free(image);
 
@@ -79,11 +80,6 @@ int main(int argc, char* argv[])
 	mapvertex::createLine(vert, vert2, map);
 	mapvertex::createLine(vert2, vert3, map);
 
-	/*LineInfo lI = {{-2,2}, {2,2}, 1, matID};
-	mapinfo::addLine(map, lI);
-	LineInfo lI2 = {{2,2}, {2,-2}, 1, matID2};
-	mapinfo::addLine(map, lI2);*/
-
 	editor::MapDisplay mapdisp;
 	editor::mapdisplay::open(mapdisp, map);
 
@@ -98,6 +94,15 @@ int main(int argc, char* argv[])
 
 	behaviour::setScriptFile(behave, "data/player.lua");
 	behaviour::attacheToEntity(behave, p);
+
+	Entity& sprEnt = EntityManager::createAndGet();
+	Sprite& spr = Spritemanager::createAndGet();
+
+	alfar::Rect defaultUV = {{0,0},{64,64}};
+	spr.uv = defaultUV;
+	spr._material = matID2;
+
+	sprite::addToEntity(spr, sprEnt);
 
     while (1) {
             SDL_Event e;
@@ -128,6 +133,12 @@ int main(int argc, char* argv[])
 
 			renderer::clearBuffer(rend, 0x00000000);
 			renderer::raytraceMap(rend, map);
+
+			sprite::drawAll(rend);
+
+			renderer::executeRenderCommand(rend);
+
+			//-------------------------------
 
 			Uint32* pixels;
 			int pitch;

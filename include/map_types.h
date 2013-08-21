@@ -13,7 +13,7 @@ struct MapVertex
 		char side; // 0 start 1 end
 	};
 
-	alfar::Vector2 _position;
+	alfar::Vector2	_position;
 
 	MapLink _linkedLines[128];
 	char _nbLines;
@@ -34,6 +34,8 @@ struct LineInfo
 	int endVertex;
 
 	int _idx;//if this is -1 this is an unitialized line
+
+	alfar::Rect	_uv;
 
 	//0 right (start to end), 1 left (end to start), 2 doublesided.
 	char side;

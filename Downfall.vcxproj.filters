@@ -164,5 +164,8 @@
     <ClInclude Include="include\component\sprite.h">
       <Filter>Header Files\component</Filter>
     </ClInclude>
+    <ClInclude Include="include\component\SpriteOrient.h">
+      <Filter>Header Files\component</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

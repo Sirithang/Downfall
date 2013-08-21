@@ -72,13 +72,28 @@ void material::drawTo(Material& mat, Renderer& buffer, const alfar::Rect& srcRec
 			if(dx < 0 || dx >= buffer.w)
 				continue;
 
+			RGBA Src;
+			RGBA Tex;
+
+			Src.integer = buffer.buffer[dy * buffer.w + dx];
+			Tex.integer = mat._texData[sy * mat.w + sx];
+
+			float alpha = Tex.A / 255.0f;
+			float invAlpha = 1.0f - alpha;
+
+			RGBA Result;
+			Result.R = Src.R * invAlpha + Tex.R * alpha;
+			Result.G = Src.G * invAlpha + Tex.G * alpha;
+			Result.B = Src.B * invAlpha + Tex.B * alpha;
+			Result.A = Src.A * invAlpha + Tex.A * alpha;
+
 			switch(style)
 			{
 			case 0:
 				buffer.buffer[dy * buffer.w + dx] = mat.color;
 				break;
 			case 1:
-				buffer.buffer[dy * buffer.w + dx] = mat._texData[sy * mat.w + sx];
+				buffer.buffer[dy * buffer.w + dx] = Result.integer;
 				break;
 			default:break;
 			}
@@ -88,17 +103,17 @@ void material::drawTo(Material& mat, Renderer& buffer, const alfar::Rect& srcRec
 
 //--------------------------------------------------------------
 
-void material::loadImg(Material& mat, unsigned int* data, int x, int y, int w, int h, int srcW, int srcH, const bool flip)
+void material::loadImg(Material& mat, unsigned int* data, int srcW, int srcH, const bool flip)
 {
-	mat.w = w;
-	mat.h = h;
-	mat._texData = new unsigned int[w*h];
+	mat.w = srcW;
+	mat.h = srcH;
+	mat._texData = new unsigned int[srcW*srcH];
 
-	for(int j = 0; j < h; ++j)
+	for(int j = 0; j < srcH; ++j)
 	{
-		for(int i = 0; i < w; ++i)
+		for(int i = 0; i < srcW; ++i)
 		{
-			mat._texData[j * w + i] = reverseBytes(data[(y + j) * srcW + (x+i)]);
+			mat._texData[j * srcW + i] = reverseBytes(data[j * srcW + i]);
 		}
 	}
 }

@@ -158,6 +158,27 @@ void editor::mapdisplay::draw(MapDisplay& disp)
 		SDL_RenderDrawRect(disp._renderer, &r);
 	}
 
+	//-- draw entity
+
+	Entity* ents = EntityManager::getDataPtr(size);
+	for(int i = 0; i < size; ++i)
+	{
+		if(player._idx == i)
+			continue;
+
+		SDL_SetRenderDrawColor(disp._renderer, 128, 128, 255, 255);
+
+		int s = 0.2f * scale.x;
+
+		SDL_Rect r;
+		r.x = (ents[i].position.x - center.x) * scale.x - s*0.5f + rect.x;
+		r.y = (ents[i].position.y - center.y) * scale.y - s*0.5f + rect.y;
+		r.w = s;
+		r.h = s;
+
+		SDL_RenderDrawRect(disp._renderer, &r);
+	}
+
 	SDL_RenderPresent(disp._renderer);
 }
 

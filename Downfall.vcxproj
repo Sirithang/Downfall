@@ -108,6 +108,7 @@
     <ClInclude Include="include\component\camera.h" />
     <ClInclude Include="include\component\spherecollider.h" />
     <ClInclude Include="include\component\sprite.h" />
+    <ClInclude Include="include\component\SpriteOrient.h" />
     <ClInclude Include="include\core\collisionmanager.h" />
     <ClInclude Include="include\core\component.h" />
     <ClInclude Include="include\core\entity.h" />

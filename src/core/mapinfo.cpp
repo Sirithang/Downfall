@@ -61,6 +61,9 @@ LineInfo& mapvertex::createLine(MapVertex& start, MapVertex& end, MapInfo& map)
 
 	line.material = 0;
 
+	alfar::Rect defaultUV = {{0,192},{64,64}};
+	line._uv = defaultUV;
+
 	line = mapinfo::addLine(map, line);
 
 	mapvertex::addLineLink(start, line, 0);

@@ -10,10 +10,20 @@
 
 using namespace renderer;
 
+void renderer::create(Renderer& rend, int w, int h)
+{
+	rend.w = w;
+	rend.h = h;
+	rend.buffer = new unsigned int[rend.h * rend.w];
+	rend.zbuffer = new float[rend.w];
+	
+	rend._nbCommand = 0;
+}
 
 void renderer::clearBuffer(Renderer& rend, int value)
 {
 	memset(rend.buffer, value, rend.w * rend.h * sizeof(int));
+	memset(rend.zbuffer, 0xffffffff, rend.w * sizeof(float));
 }
 
 //========================================
@@ -29,24 +39,6 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 	Entity& player = EntityManager::getObject(cam._entity);
 
 	alfar::Vector2 lookDir = entity::getForward(player);
-
-	/*if(inputmanager::keyPressed(SDLK_z))
-	{
-		player.position = player.position + (lookDir * 0.1f);
-	}
-	else if(inputmanager::keyPressed(SDLK_s))
-	{
-		player.position = player.position - (lookDir * 0.1f);
-	}
-	
-	if(inputmanager::keyPressed(SDLK_d))
-	{
-		player.angle += -0.05f;
-	}
-	else if(inputmanager::keyPressed(SDLK_q))
-	{
-		player.angle += 0.05f;
-	}*/
 
 	alfar::Vector2 perpDir = {lookDir.y,-lookDir.x};
 	perpDir = perpDir * cam.planeSize;
@@ -72,6 +64,8 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 			if(dist < 0.1f)
 				continue;
 
+			rend.zbuffer[x] = dist;
+
 			LineInfo ln = map._lines[inter.lineID];
 			Material& mat = MaterialManager::getObject(ln.material);
 
@@ -82,10 +76,47 @@ void renderer::raytraceMap(Renderer& rend, const MapInfo& map)
 			float wrappedUV = inter.purcentage * lineinfo::length(ln);
 			wrappedUV = wrappedUV - std::floor(wrappedUV);
 
-			alfar::Rect src = {{wrappedUV * mat.w,0},{1,mat.h}};
+			RenderCommand cmd;
+
+			alfar::Rect src = {{ln._uv.min.x + wrappedUV * ln._uv.max.x, ln._uv.min.y},{1,ln._uv.min.y+ln._uv.max.y}};
 			alfar::Rect dst = {{x,y},{x+1,y+h}};
 
-			material::drawTo(mat, rend, src, dst);
+			cmd.source = src;
+			cmd.dest = dst;
+			cmd.dist = dist;
+			cmd.material = ln.material;
+
+			renderer::insertCommand(rend, cmd);
+
+			//material::drawTo(mat, rend, src, dst);
 		}
 	}
+}
+
+void renderer::insertCommand(Renderer& rend, RenderCommand command)
+{
+	rend._command[rend._nbCommand] = command;
+	rend._nbCommand += 1;
+}
+
+void renderer::executeRenderCommand(Renderer& rend)
+{
+	std::qsort(rend._command, rend._nbCommand, sizeof(RenderCommand), rendercommand::backToFrontCmp);
+
+	for(int i = 0; i < rend._nbCommand; ++i)
+	{
+		RenderCommand& cmd = rend._command[i];
+		Material& mat = MaterialManager::getObject(cmd.material);
+		material::drawTo(mat, rend, cmd.source, cmd.dest);
+	}
+
+	rend._nbCommand = 0;
+}
+
+
+//========================================================
+
+int rendercommand::backToFrontCmp(const void* A, const void* B)
+{
+	return ((const RenderCommand*)B)->dist - ((const RenderCommand*)A)->dist;
 }
