@@ -17,7 +17,7 @@ void editor::mapdisplay::open(MapDisplay& disp, MapInfo& info)
 	disp._map = info;
 	disp._renderer = SDL_CreateRenderer(disp._win, -1, SDL_RENDERER_ACCELERATED);
 
-	disp._vertSelected = -1;
+	disp._currentSelection._currentIndex = -1;
 
 	scale = alfar::vector2::create(50, -50);
 	center = alfar::vector2::create(0,0);
@@ -138,7 +138,7 @@ void editor::mapdisplay::draw(MapDisplay& disp)
 		if(vert[i]._index == -1)
 			continue;
 
-		if(disp._vertSelected == i)
+		if(disp._currentSelection._currentType == Selection::VERTEX && disp._currentSelection._currentIndex == i)
 		{
 			SDL_SetRenderDrawColor(disp._renderer, 255, 0, 255, 255);
 		}
@@ -219,7 +219,7 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 			{
 				currentMode = VERT_CREATE;
 
-				if(disp._vertSelected != -1)
+				if(disp._currentSelection._currentType == Selection::VERTEX && disp._currentSelection._currentIndex != -1)
 				{
 					int closest = mapvertex::getClosest(worldPos);
 
@@ -229,23 +229,25 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 						closest = v._index;
 					}
 
-					mapvertex::createLine(VertexManager::getObject(disp._vertSelected), vert[closest], info);
+					mapvertex::createLine(VertexManager::getObject(disp._currentSelection._currentIndex), vert[closest], info);
 
-					disp._vertSelected = closest;
+					disp._currentSelection._currentType = Selection::VERTEX;
+					disp._currentSelection._currentIndex = closest;
 				}
 				else
 				{
 					MapVertex& v = mapvertex::add(worldPos);
-					disp._vertSelected = v._index;
+					disp._currentSelection._currentType = Selection::VERTEX;
+					disp._currentSelection._currentIndex = v._index;
 				}
 			}
 			else if(inputmanager::keyPressed(SDLK_LSHIFT))
 			{
 				int close = mapvertex::getClosest(worldPos);
-				if(disp._vertSelected != -1 && close != -1)
+				if(disp._currentSelection._currentType == Selection::VERTEX && disp._currentSelection._currentIndex != -1 && close != -1)
 				{
 					MapVertex& v = vert[close];
-					MapVertex& v2 = vert[disp._vertSelected];
+					MapVertex& v2 = vert[disp._currentSelection._currentIndex];
 
 					bool create = true;
 					for(int i = 0; i < v._nbLines; ++i)
@@ -273,7 +275,8 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 			{
 				// -- check for which vertex is selected;
 				currentMode = VERT_MOVE;
-				disp._vertSelected = mapvertex::getClosest(worldPos);
+				disp._currentSelection._currentType = Selection::VERTEX;
+				disp._currentSelection._currentIndex = mapvertex::getClosest(worldPos);
 			}
 			clickedPos = mouse;
 		}
@@ -297,7 +300,7 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 
 	if(currentMode == VERT_MOVE)
 	{
-		if(disp._vertSelected != -1)
+		if(disp._currentSelection._currentType == Selection::VERTEX && disp._currentSelection._currentIndex != -1)
 		{
 			alfar::Vector2 p = worldPos;
 			if(inputmanager::keyPressed(SDLK_LALT))
@@ -306,7 +309,7 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 				p.y = std::floor(p.y);
 			}
 
-			mapvertex::move(vert[disp._vertSelected], info, p);
+			mapvertex::move(vert[disp._currentSelection._currentIndex], info, p);
 		}
 	}
 	else if(currentMode == CAM_MOV)
@@ -322,10 +325,10 @@ void editor::mapdisplay::handleInput(MapDisplay& disp, MapInfo& info)
 
 	if(inputmanager::keyPressed(SDLK_DELETE))
 	{
-		if(disp._vertSelected != -1)
+		if(disp._currentSelection._currentType == Selection::VERTEX && disp._currentSelection._currentIndex != -1)
 		{
-			mapinfo::removeVertex(info, disp._vertSelected);
-			disp._vertSelected = -1;
+			mapinfo::removeVertex(info, disp._currentSelection._currentIndex);
+			disp._currentSelection._currentIndex = -1;
 		}
 	}
 }

@@ -9,14 +9,14 @@ function onUpdate()
 
 	local nx, ny= x,y;
 	
-	local speed = 0.05
+	local speed = 5
 
 	if DF.isKeyPressed(KEYS.W) then
-		nx = x + fx * speed
-		ny = y + fy * speed
+		nx = x + fx * speed * gDeltaTime
+		ny = y + fy * speed * gDeltaTime
 	elseif DF.isKeyPressed(KEYS.S) then
-		nx = x - fx * speed
-		ny = y - fy * speed
+		nx = x - fx * speed * gDeltaTime
+		ny = y - fy * speed * gDeltaTime
 	end
 
 	if DF.sphereCollide(nx, y, size) then nx = x end
@@ -25,9 +25,9 @@ function onUpdate()
 	DF.setPosition(this, nx, ny)
 
 	if DF.isKeyPressed(KEYS.A) then
-		DF.setAngle(this, angle + 0.05)
+		DF.setAngle(this, angle + 5.0 * gDeltaTime)
 	elseif DF.isKeyPressed(KEYS.D) then
-		DF.setAngle(this, angle - 0.05)
+		DF.setAngle(this, angle - 5.0 * gDeltaTime)
 	end
 	
 	collided = false

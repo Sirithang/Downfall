@@ -2,19 +2,26 @@
 
 #include "core/renderer.h"
 #include "mapinfo.h"
+
+#include "core/global.h"
 #include "core/material.h"
 #include "core/inputmanager.h"
 #include "core/entity.h"
 #include "core/collisionmanager.h"
+
 #include "component/camera.h"
 #include "component/spherecollider.h"
 #include "component/behaviour.h"
 #include "component/sprite.h"
+#include "component/spriteorient.h"
+
 #include "editor/mapdisplay.h"
 
 #include "math/vector2.h"
 
 #include "helper/lodepng.h"
+
+float gDeltaTime = 0;
 
 
 int main(int argc, char* argv[])
@@ -28,6 +35,7 @@ int main(int argc, char* argv[])
 	SphereColliderManager::init();
 	BehaviourManager::init();
 	Spritemanager::init();
+	SpriteOrientManager::init();
 
 	SDL_Window *win = NULL;
     SDL_Renderer *renderer = NULL;
@@ -43,6 +51,12 @@ int main(int argc, char* argv[])
 
 	Renderer rend;
 	renderer::create(rend, 800, 600);
+
+	Uint64 t1, t2, frequency;
+
+	frequency = SDL_GetPerformanceFrequency();
+
+	///*******DEBUG STUFF TESTING AND ALL
 
 	int matID = MaterialManager::createObject();
 
@@ -104,6 +118,11 @@ int main(int argc, char* argv[])
 
 	sprite::addToEntity(spr, sprEnt);
 
+	SpriteOrient& sprOr = SpriteOrientManager::createAndGet();
+	sprOr.nbAngles = 4;
+
+	spriteorient::addToEntity(sprOr, sprEnt);
+
     while (1) {
             SDL_Event e;
 			int wheel = 0;
@@ -120,6 +139,8 @@ int main(int argc, char* argv[])
 					}
             }
 
+			t1 = SDL_GetPerformanceCounter();
+
 			inputmanager::update(wheel);
 
 			if(inputmanager::keyPressed(SDLK_F5))
@@ -133,6 +154,8 @@ int main(int argc, char* argv[])
 
 			renderer::clearBuffer(rend, 0x00000000);
 			renderer::raytraceMap(rend, map);
+
+			spriteorient::updateAll();
 
 			sprite::drawAll(rend);
 
@@ -151,6 +174,10 @@ int main(int argc, char* argv[])
             SDL_RenderClear(renderer);
 			SDL_RenderCopy(renderer, writableTex, NULL, NULL);
             SDL_RenderPresent(renderer);
+
+			t2 = SDL_GetPerformanceCounter();
+
+ 			gDeltaTime = (t2 - t1) / (float)frequency;
     }
 
 	delete rend.buffer;

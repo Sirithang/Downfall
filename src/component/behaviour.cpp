@@ -1,6 +1,7 @@
 #include "component/behaviour.h"
 #include "core/inputmanager.h"
 #include "core/collisionmanager.h"
+#include "core/global.h"
 #include "mapinfo.h"
 #include "SDL.h"
 
@@ -25,6 +26,9 @@ void behaviour::update()
 	{
 		if(bs[i]._luaState == NULL)
 			continue;
+
+		lua_pushnumber(bs[i]._luaState, gDeltaTime);
+		lua_setglobal(bs[i]._luaState, "gDeltaTime");
 
 		lua_getglobal(bs[i]._luaState, "onUpdate");
 		if (lua_pcall(bs[i]._luaState, 0, 0, 0) != 0)

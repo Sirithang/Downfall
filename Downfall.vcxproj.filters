@@ -93,6 +93,9 @@
     <ClCompile Include="src\component\sprite.cpp">
       <Filter>Source Files\component</Filter>
     </ClCompile>
+    <ClCompile Include="src\component\spriteorient.cpp">
+      <Filter>Source Files\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\math\mat4x4.h">
@@ -166,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="include\component\SpriteOrient.h">
       <Filter>Header Files\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\global.h">
+      <Filter>Header Files\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

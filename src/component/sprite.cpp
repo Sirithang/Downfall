@@ -21,6 +21,12 @@ void destroyed(Sprite& spr)
 void sprite::addToEntity(Sprite& spr, Entity& ent)
 {
 	spr._entity = ent._idx;
+
+	ComponentInfo info;
+	info._idx = spr._idx;
+	info._type = SPRITE;
+
+	entity::addComponentInfo(ent, info);
 }
 
 void sprite::drawAll(Renderer& rend)

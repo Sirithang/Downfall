@@ -4,7 +4,9 @@ enum ComponentType
 {
 	CAMERA,
 	BEHAVIOUR,
-	SPHERECOLLIDER
+	SPHERECOLLIDER,
+	SPRITE,
+	SPRITEORIENT
 };
 
 struct Component

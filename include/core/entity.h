@@ -25,6 +25,8 @@ void destroyed(Entity& ent);
 namespace entity
 {
 	void addComponentInfo(Entity& entity, ComponentInfo info);
+	ComponentInfo getComponentInfo(Entity& entity, ComponentType type);
 
 	alfar::Vector2 getForward(Entity& entity);
+
 }
